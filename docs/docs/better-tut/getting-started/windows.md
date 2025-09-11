@@ -48,9 +48,7 @@ By: [:material-github: wu-kan](https://github.com/wu-kan)、[:material-github: h
 
 ![](images/idea-6-scala-add.png)
 
-完成安装后， `lab1` 项目应该能被正确加载，此时 `双击` ++shift++ 打开 `RegisterFileTest.scala` ，应该能看见测试左侧的绿色箭头，点击运行如果能提示测试通过，则说明环境配置正确。
 
-![](images/idea-test-passed.png){width=80%}
 
 
 ### 选项2：安装 Visual Studio Code
@@ -152,6 +150,12 @@ make -j$(nproc); make install
 verilator_bin --version
 # 若成功会输出 Verilator 4.226 2022-08-31 rev v4.226
 ```
+
+## 检验环境安装成功
+
+完成 IDEA / Vscode，以及 Verilator 的安装后， `lab1` 项目应该能被正确加载，在 IDEA 中 `双击` ++shift++ 打开 `RegisterFileTest.scala` ，应该能看见测试左侧的绿色箭头，点击运行如果能提示测试通过，则说明环境配置正确。
+
+![](images/idea-test-passed.png){width=80%}
 
 
 
