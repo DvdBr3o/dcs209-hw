@@ -1,4 +1,4 @@
-# Scala 和 Chisel 编程语言
+# 实验零 Scala 和 Chisel 编程语言
 
 Writen By: [Howard Lau](https://github.com/howardlau1999), [Tiger9Tu](), [PurplePower](https://github.com/PurplePower)
 
