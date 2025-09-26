@@ -1,7 +1,7 @@
 site_name: 2025-Yatcpu-Fall-Docs
 site_author: Tokisakix
 copyright: Copyright © 2023 Tokisakix
-use_directory_urls: false
+use_directory_urls: true
 
 nav:
 - 前言: docs/index.md
