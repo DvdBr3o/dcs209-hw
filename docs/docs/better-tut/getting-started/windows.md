@@ -22,13 +22,13 @@ By: [:material-github: wu-kan](https://github.com/wu-kan)、[:material-github: h
 您可通过先安装 [Jetbrains Toolbox](https://www.jetbrains.com/toolbox-app/) 再从中下载 IDEA，也可在 [Intellij IDEA](https://www.jetbrains.com/idea/download/?section=windows) 处直接下载免费的 Community 版本(其他版本需收费且功能用不上)。
 
 
-安装完成后打开，您应能看到欢迎界面，此时点击右上角的 Clone Repository 以克隆实验代码仓库，地址为 https://github.com/Tokisakix/2023-fall-yatcpu-repo，并选择项目下载的文件夹，点击 clone 开始下载。
+安装完成后打开，您应能看到欢迎界面，此时点击右上角的 Clone Repository 以克隆实验代码仓库，地址为 https://github.com/PurplePower/2025-fall-yatcpu-repo，并选择项目下载的文件夹，点击 clone 开始下载。
 若由于网络问题克隆失败，可以重新尝试该步骤，或者直接去 GitHub 网页下载压缩包并解压。
-下文均假设项目克隆至文件夹 `2023-fall-yatcpu-repo` 。
+下文均假设项目克隆至文件夹 `2025-fall-yatcpu-repo` 。
 
 ![](images/idea-1-clone-prj.png)
 
-稍等片刻后，项目将被打开，此时会提示是否信任该仓库，选择 Trust Project。您可以在左侧文件浏览器一览整个仓库的结构，包括各个实验的项目文件夹 `labx` 。目前我们是将 `2023-fall-yatcpu-repo` 文件夹作为根目录（root），当进行后续实验时，需要以对应实验的 `labx` 作为根目录。如下图，在左上角 File - Close Project 关闭当前项目，并重新打开 `2023-fall-yatcpu-repo` 下面的 `lab1` 。
+稍等片刻后，项目将被打开，此时会提示是否信任该仓库，选择 Trust Project。您可以在左侧文件浏览器一览整个仓库的结构，包括各个实验的项目文件夹 `labx` 。目前我们是将 `2025-fall-yatcpu-repo` 文件夹作为根目录（root），当进行后续实验时，需要以对应实验的 `labx` 作为根目录。如下图，在左上角 File - Close Project 关闭当前项目，并重新打开 `2025-fall-yatcpu-repo` 下面的 `lab1` 。
 
 ![](images/idea-2-close-and-reopen-lab-as-root.png)
 

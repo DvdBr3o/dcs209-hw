@@ -37,7 +37,7 @@ sudo apt install -y git \
 | libtinfo5               | Vivado 启动依赖                      |
 | md5sum                  | 安装包校验工具                       |
 
-安装完成之后，在任意目录执行 `git clone --recursive https://github.com/Tokisakix/2023-fall-yatcpu-repo` 下载代码仓库。
+安装完成之后，在任意目录执行 `git clone --recursive https://github.com/PurplePower/2025-fall-yatcpu-repo` 下载代码仓库。
 
 ## 安装 sbt 包管理器
 
