@@ -66,6 +66,7 @@
     io.instruction := io.instruction_read_data
     // lab1(InstructionDecode)
     // ...
+  }
 ```
 
 
