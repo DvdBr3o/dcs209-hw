@@ -95,6 +95,16 @@ Verilator 4.219 devel rev UNKNOWN.REV (mod)
 
 
 
+## 检验环境安装成功
+
+如果您使用 IDEA 或 Vscode 远程连接到 Linux 上，那么可以打开 `lab1`并加载，vscode 需要手动点击右下角窗口 `Import build`。
+
+在 IDEA 中 `双击` ++shift++ 打开 `RegisterFileTest.scala` ，应该能看见测试左侧的绿色箭头，点击运行如果能提示测试通过，则说明环境配置正确。
+
+![](images/idea-test-passed.png){width=80%}
+
+如果您使用纯文本模式写码，您可以参考 [快速测试](../practice/chisel-test.md#快速测试) 教程，在终端中用命令测试。
+
 
 ---
 
