@@ -64,7 +64,7 @@ By: [:material-github: wu-kan](https://github.com/wu-kan)、[:material-github: h
     在 [](https://code.visualstudio.com/download) 处下载适合的版本，一般为 Windows x64 版本。vscode 运行 scala 依赖于 Metals 这款插件，配置教程可看：[极客教程](https://geek-docs.com/scala/scala-questions/475_scala_how_to_run_an_existing_scala_project_using_vs_code_and_metals.html) 和 [Metals官方文档](https://scalameta.org/metals/docs/editors/vscode) 。
 
 
-    参照 [Using the Scala Installer (recommended way)](https://docs.scala-lang.org/getting-started/index.html#using-the-scala-installer-recommended-way) ，在页面处下载 Coursier 工具，并跟随指引安装。Coursier 会自动安装 JDK 和 sbt 。
+    参照 [Using the Scala Installer (recommended way)](https://docs.scala-lang.org/getting-started/install-scala.html#install-scala-on-your-computer) ，在页面处下载 Coursier 工具，并跟随指引安装。Coursier 会自动安装 JDK 和 sbt 。
 
     完成这两项后，打开 vscode，打开 `lab1` 作为根目录。注意 vscode 右下角提示 "Import project" 时，点击导入项目，即可加载。
 
