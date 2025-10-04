@@ -118,14 +118,11 @@ class MemoryTestF extends AnyFlatSpec with ChiselScalatestTester {
   class MemoryTest extends Module {
     val io = IO(new Bundle {
       val bundle = new AXI4LiteMasterBundle(Parameters.AddrBits, Parameters.DataBits)
-
-      val write_strobe = Input(UInt(4.W))
     })
     val memory = Module(new Memory(4096))
     val master = Module(new AXI4LiteMaster(Parameters.AddrBits, Parameters.DataBits))
 
     master.io.bundle <> io.bundle
-    master.io.bundle.write_strobe := VecInit(io.write_strobe.asBools)
     master.io.channels <> memory.io.channels
     memory.io.debug_read_address := 0.U
   }
