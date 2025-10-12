@@ -25,12 +25,10 @@ object AXI4Lite {
 }
 
 class AXI4LiteWriteAddressChannel(addrWidth: Int) extends Bundle {
-
   val AWVALID = Output(Bool())
   val AWREADY = Input(Bool())
   val AWADDR = Output(UInt(addrWidth.W))
   val AWPROT = Output(UInt(AXI4Lite.protWidth.W))
-
 }
 
 class AXI4LiteWriteDataChannel(dataWidth: Int) extends Bundle {
@@ -152,7 +150,31 @@ class AXI4LiteSlave(addrWidth: Int, dataWidth: Int) extends Module {
   io.channels.write_response_channel.BVALID := BVALID
   val BRESP = WireInit(0.U(AXI4Lite.respWidth))
   io.channels.write_response_channel.BRESP := BRESP
-  //lab4(BUS)
+
+  // lab4 (Bus) slave
+  switch(state) {
+    is (AXI4LiteStates.Idle) {
+
+    }
+
+    is (AXI4LiteStates.ReadAddr) {
+
+    }
+
+    is (AXI4LiteStates.ReadData) {
+
+    }
+
+    is (AXI4LiteStates.WriteData) {
+
+    }
+
+    is (AXI4LiteStates.WriteResp) {
+
+    }
+  }
+
+  // lab4 (Bus) slave End
   
 }
 
@@ -191,6 +213,30 @@ class AXI4LiteMaster(addrWidth: Int, dataWidth: Int) extends Module {
   io.channels.write_data_channel.WSTRB := write_strobe.asUInt
   val BREADY = RegInit(false.B)
   io.channels.write_response_channel.BREADY := BREADY
-  //lab4(BUS)
-  
+
+  // lab4 (Bus) master
+  switch(state) {
+    is (AXI4LiteStates.Idle) {
+
+    }
+
+    is (AXI4LiteStates.ReadAddr) {
+
+    }
+
+    is (AXI4LiteStates.ReadData) {
+
+    }
+
+    is (AXI4LiteStates.WriteData) {
+
+    }
+
+    is (AXI4LiteStates.WriteResp) {
+
+    }
+  }
+
+  // lab4 (Bus) master End
+
 }

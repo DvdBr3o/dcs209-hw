@@ -52,7 +52,7 @@ object FlexibleTestHelper {
 
 
 
-class TimerTest extends AnyFlatSpec with ChiselScalatestTester {
+class TimerTestF extends AnyFlatSpec with ChiselScalatestTester {
   class TestTimerLimit extends Module {
     val io = IO(new Bundle {
       val limit = Output(UInt())
