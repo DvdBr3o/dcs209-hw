@@ -2,7 +2,7 @@
 
 By: [:material-github: wu-kan](https://github.com/wu-kan)
 
-以下两个测试，按照自己使用的工具，完成其中一个即可。
+以下两个测试，按照自己使用的工具，使用其中一个即可测试代码的正确性。
 
 ## IDE 操作
 

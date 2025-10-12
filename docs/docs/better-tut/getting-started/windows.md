@@ -22,13 +22,13 @@ By: [:material-github: wu-kan](https://github.com/wu-kan)、[:material-github: h
 您可通过先安装 [Jetbrains Toolbox](https://www.jetbrains.com/toolbox-app/) 再从中下载 IDEA，也可在 [Intellij IDEA](https://www.jetbrains.com/idea/download/?section=windows) 处直接下载免费的 Community 版本(其他版本需收费且功能用不上)。
 
 
-安装完成后打开，您应能看到欢迎界面，此时点击右上角的 Clone Repository 以克隆实验代码仓库，地址为 https://github.com/Tokisakix/2023-fall-yatcpu-repo，并选择项目下载的文件夹，点击 clone 开始下载。
+安装完成后打开，您应能看到欢迎界面，此时点击右上角的 Clone Repository 以克隆实验代码仓库，地址为 https://github.com/PurplePower/2025-fall-yatcpu-repo，并选择项目下载的文件夹，点击 clone 开始下载。
 若由于网络问题克隆失败，可以重新尝试该步骤，或者直接去 GitHub 网页下载压缩包并解压。
-下文均假设项目克隆至文件夹 `2023-fall-yatcpu-repo` 。
+下文均假设项目克隆至文件夹 `2025-fall-yatcpu-repo` 。
 
 ![](images/idea-1-clone-prj.png)
 
-稍等片刻后，项目将被打开，此时会提示是否信任该仓库，选择 Trust Project。您可以在左侧文件浏览器一览整个仓库的结构，包括各个实验的项目文件夹 `labx` 。目前我们是将 `2023-fall-yatcpu-repo` 文件夹作为根目录（root），当进行后续实验时，需要以对应实验的 `labx` 作为根目录。如下图，在左上角 File - Close Project 关闭当前项目，并重新打开 `2023-fall-yatcpu-repo` 下面的 `lab1` 。
+稍等片刻后，项目将被打开，此时会提示是否信任该仓库，选择 Trust Project。您可以在左侧文件浏览器一览整个仓库的结构，包括各个实验的项目文件夹 `labx` 。目前我们是将 `2025-fall-yatcpu-repo` 文件夹作为根目录（root），当进行后续实验时，需要以对应实验的 `labx` 作为根目录。如下图，在左上角 File - Close Project 关闭当前项目，并重新打开 `2025-fall-yatcpu-repo` 下面的 `lab1` 。
 
 ![](images/idea-2-close-and-reopen-lab-as-root.png)
 
@@ -64,7 +64,7 @@ By: [:material-github: wu-kan](https://github.com/wu-kan)、[:material-github: h
     在 [](https://code.visualstudio.com/download) 处下载适合的版本，一般为 Windows x64 版本。vscode 运行 scala 依赖于 Metals 这款插件，配置教程可看：[极客教程](https://geek-docs.com/scala/scala-questions/475_scala_how_to_run_an_existing_scala_project_using_vs_code_and_metals.html) 和 [Metals官方文档](https://scalameta.org/metals/docs/editors/vscode) 。
 
 
-    参照 [Using the Scala Installer (recommended way)](https://docs.scala-lang.org/getting-started/index.html#using-the-scala-installer-recommended-way) ，在页面处下载 Coursier 工具，并跟随指引安装。Coursier 会自动安装 JDK 和 sbt 。
+    参照 [Using the Scala Installer (recommended way)](https://docs.scala-lang.org/getting-started/install-scala.html#install-scala-on-your-computer) ，在页面处下载 Coursier 工具，并跟随指引安装。Coursier 会自动安装 JDK 和 sbt 。
 
     完成这两项后，打开 vscode，打开 `lab1` 作为根目录。注意 vscode 右下角提示 "Import project" 时，点击导入项目，即可加载。
 
@@ -154,6 +154,8 @@ verilator_bin --version
 ## 检验环境安装成功
 
 完成 IDEA / Vscode，以及 Verilator 的安装后， `lab1` 项目应该能被正确加载，在 IDEA 中 `双击` ++shift++ 打开 `RegisterFileTest.scala` ，应该能看见测试左侧的绿色箭头，点击运行如果能提示测试通过，则说明环境配置正确。
+
+其他利用命令行测试的方法可以查看教程 [快速测试](../practice/chisel-test.md#快速测试) 。
 
 ![](images/idea-test-passed.png){width=80%}
 

@@ -15,8 +15,8 @@ YatCPU (Yet another toy CPU，逸芯) 是一款开源、开发中的教学用 RI
 你也可以选择在下载到本地后阅读
 
 ```
-git clone https://github.com/Tokisakix/2023-fall-yatcpu-repo.git
-cd 2023-fall-yatcpu-repo/docs
+git clone https://github.com/PurplePower/2025-fall-yatcpu-repo.git
+cd 2025-fall-yatcpu-repo/docs
 pip install -r requirements.txt
 mkdocs serve
 ```
@@ -27,7 +27,3 @@ mkdocs serve
 2. add riscv-m extension
 3. using rx for receive from PC
 4. using other display ports
-5. summary of problems
-6. add more test on alu source to ExecuteTest
-7. bug on lab3 5-stage pipeline ID.rs2
-8. TODO: ?disable verilator to debug

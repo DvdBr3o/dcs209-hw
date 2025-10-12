@@ -35,7 +35,7 @@ Writen By: [Tokisakix](https://github.com/Tokisakix)
 
 上述步骤完成后，我们就可以像在 Dev container 为我们配置好的开发环境中运行、调试代码了。
 
-切换路径为 <code>2023-fall-yatcpu-repo/mini-yatcpu/</code>，新建终端并输入 <code>sbt test</code>，期望你有如下输出
+切换路径为 <code>2025-fall-yatcpu-repo/mini-yatcpu/</code>，新建终端并输入 <code>sbt test</code>，期望你有如下输出
 
 ![image](asset/devcontainer3.png)
 
