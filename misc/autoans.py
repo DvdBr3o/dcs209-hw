@@ -6,6 +6,10 @@ This tool reads a YAML configuration file containing code snippets and operation
 then applies them to target files. It supports two main operations:
 1. Adding import statements at the beginning of files
 2. Inserting code blocks after specific anchor comments
+
+New: anchor configs may include an optional `indent` value. If provided, it
+overrides inferred indentation. `indent` may be an integer (number of levels,
+each level = 2 spaces) or a literal string to use as indentation.
 """
 
 import yaml
@@ -95,7 +99,7 @@ class CodeFiller:
         
         return new_lines
     
-    def _insert_after_anchor(self, lines: List[str], anchor: str, code: str) -> List[str]:
+    def _insert_after_anchor(self, lines: List[str], anchor: str, code: str, indent: Optional[object] = None) -> List[str]:
         """
         Insert code after a specific anchor comment.
         
@@ -112,21 +116,28 @@ class CodeFiller:
         """
         anchor_found = False
         new_lines = []
-        
+
         for i, line in enumerate(lines):
             new_lines.append(line)
-            
+
             if anchor.strip() in line.strip():
                 anchor_found = True
-                
-                # Extract indentation from the anchor line
-                anchor_indent = ""
-                for char in line:
-                    if char in [' ', '\t']:
-                        anchor_indent += char
+                # Determine indentation: use provided `indent` if given, else infer from the anchor line
+                if indent is None:
+                    anchor_indent = ""
+                    for char in line:
+                        if char in [' ', '\t']:
+                            anchor_indent += char
+                        else:
+                            break
+                else:
+                    # If indent is an integer, treat as indentation levels (2 spaces per level)
+                    if isinstance(indent, int):
+                        anchor_indent = ' ' * (2 * indent)
                     else:
-                        break
-                
+                        # Otherwise use the string representation directly
+                        anchor_indent = str(indent)
+
                 # Add the code block after the anchor with proper indentation
                 code_lines = code.strip().split('\n')
                 for code_line in code_lines:
@@ -143,7 +154,7 @@ class CodeFiller:
         
         return new_lines
     
-    def _replace_between_anchors(self, lines: List[str], begin_anchor: str, end_anchor: str, code: str) -> List[str]:
+    def _replace_between_anchors(self, lines: List[str], begin_anchor: str, end_anchor: str, code: str, indent: Optional[object] = None) -> List[str]:
         """
         Replace the contents between begin_anchor and end_anchor with the given code.
         Preserves indentation of the begin_anchor.
@@ -154,7 +165,7 @@ class CodeFiller:
         for i, line in enumerate(lines):
             if begin_anchor.strip() == line.strip():
                 begin_idx = i
-                # Extract indentation from the begin anchor line
+                # Extract indentation from the begin anchor line (default)
                 for char in line:
                     if char in [' ', '\t']:
                         anchor_indent += char
@@ -170,6 +181,13 @@ class CodeFiller:
         if end_idx <= begin_idx:
             raise ValueError(f"End anchor '{end_anchor}' @ {end_idx=} found before begin anchor '{begin_anchor} @ {begin_idx=}'")
         
+        # If explicit indent provided, override the inferred anchor_indent
+        if indent is not None:
+            if isinstance(indent, int):
+                anchor_indent = ' ' * (2 * indent)
+            else:
+                anchor_indent = str(indent)
+
         # Build new lines
         new_lines = lines[:begin_idx+1]
         code_lines = code.strip().split('\n')
@@ -216,17 +234,19 @@ class CodeFiller:
         # Process anchor insertions and replacements
         if 'anchors' in operations and operations['anchors']:
             for anchor, config in operations['anchors'].items():
+                # Extract optional indent from config (could be int levels or string)
+                indent = config.get('indent') if isinstance(config, dict) else None
                 if 'code' in config and 'end_anchor' in config:
                     try:
                         modified_lines = self._replace_between_anchors(
-                            modified_lines, anchor, config['end_anchor'], config['code']
+                            modified_lines, anchor, config['end_anchor'], config['code'], indent=indent
                         )
                     except ValueError as e:
                         raise ValueError(f"Failed to process file '{target_file}': {e}") from e
                 elif 'code' in config:
                     try:
                         modified_lines = self._insert_after_anchor(
-                            modified_lines, anchor, config['code']
+                            modified_lines, anchor, config['code'], indent=indent
                         )
                     except ValueError as e:
                         raise ValueError(f"Failed to process file '{target_file}': {e}") from e

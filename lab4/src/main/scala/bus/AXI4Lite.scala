@@ -266,9 +266,9 @@ class AXI4LiteMaster(addrWidth: Int, dataWidth: Int) extends Module {
       
     }
 
-    // lab4(bus): master End
+    
   }
-
+  // lab4(bus): master End
 }
 
 
