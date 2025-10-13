@@ -43,11 +43,10 @@ class Top(binaryFilename: String ="say_goodbye.asmbin") extends Module {
   val rom_loader = Module(new ROMLoader(instruction_rom.capacity))
 
   // bus connections
-  bus_arbiter.io.bus_request(0) := true.B
   for (i <- 0 until Parameters.SlaveDeviceCount) {
     bus_switch.io.slaves(i) <> dummy.io.channels
   }
-
+  bus_arbiter.io.bus_request(0) := true.B
   bus_switch.io.slaves(2) <> uart.io.channels
   bus_switch.io.slaves(4) <> timer.io.channels
 
@@ -72,9 +71,7 @@ class Top(binaryFilename: String ="say_goodbye.asmbin") extends Module {
         boot_state := BootStates.Finished
       }
     }
-    is(BootStates.Finished) {
-
-    }
+    is(BootStates.Finished) { }
   }
 
   val reset_cpu = reset.asBool && (boot_state =/= BootStates.Finished)
@@ -92,6 +89,7 @@ class Top(binaryFilename: String ="say_goodbye.asmbin") extends Module {
     }
   }
   
+  // debug signals 
   mem.io.debug_read_address := 0.U
 
   val led_count = RegInit(0.U(32.W))

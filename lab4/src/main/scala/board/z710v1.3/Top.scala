@@ -46,7 +46,6 @@ class Top(binaryFilename: String ="say_goodbye.asmbin") extends Module {
   for (i <- 0 until Parameters.SlaveDeviceCount) {
     bus_switch.io.slaves(i) <> dummy.io.channels
   }
-
   bus_arbiter.io.bus_request(0) := true.B
   bus_switch.io.slaves(2) <> uart.io.channels
   bus_switch.io.slaves(4) <> timer.io.channels
