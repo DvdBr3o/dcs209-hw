@@ -2,6 +2,10 @@ target
 .vscode
 .metals
 .bloop
+**/project/metals.sbt
+**/project/project
+
+# VCD output
 **/test_run_dir
 
 # vivado stuffs
@@ -12,5 +16,8 @@ target
 **/riscv-z710-v2020
 .Xil
 
-# autoans
+# 
 misc/lab*_ans.yaml
+
+# github pages
+site/**/*

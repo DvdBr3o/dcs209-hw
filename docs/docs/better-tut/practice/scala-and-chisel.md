@@ -1,6 +1,6 @@
-# Scala 和 Chisel 编程语言
+# 实验零 Scala 和 Chisel 编程语言
 
-Writen By: [Howard Lau], [Tiger9Tu], [PurplePower](https://github.com/PurplePower)
+Writen By: [Howard Lau](https://github.com/howardlau1999), [Tiger9Tu](), [PurplePower](https://github.com/PurplePower)
 
 > 工欲善其事，必先利其器。
 
@@ -95,9 +95,9 @@ Chisel 3 严格意义上并不是 Verilog 的等价替代，而是一个生成�
 [free chips project Chisel 3.6.0 Cheat Sheet](https://github.com/freechipsproject/chisel-cheatsheet/releases/download/3.6.0/chisel_cheatsheet.pdf)
 
 
-![Cheatsheet1](assets/cheatsheet-page1.png)
+![Cheatsheet1](images/cheatsheet-page1.png)
 
-![Cheatsheet2](assets/cheatsheet-page2.png)
+![Cheatsheet2](images/cheatsheet-page2.png)
 
 
 

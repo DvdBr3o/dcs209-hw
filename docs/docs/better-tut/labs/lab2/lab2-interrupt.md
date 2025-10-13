@@ -151,7 +151,7 @@ CSR 寄存器组的代码文件位于 `src/main/scala/riscv/core/CSR.scala`
 
 CLINT 的代码文件位于 `src/main/scala/riscv/core/CLINT.scala`
 
-Timer 的代码位于 `src/main/scala/riscv/peripheral/Timer.scala`
+Timer 的代码位于 `src/main/scala/peripheral/Timer.scala`
 
 !!! tip
       IDEA 可以双击 shift，vscode 可以 shift+P 以打开文件快速搜索面板。
@@ -160,6 +160,12 @@ Timer 的代码位于 `src/main/scala/riscv/peripheral/Timer.scala`
 
 <!-- 如果能够正确完成本次实验，那么你的 CPU 就可以运行更加复杂的程序了，可以运行一下俄罗斯方块程序试试，如果想要上手玩的话，也许需要一个串口转接板，这样就可以通过电脑的键盘通过 UART 串口给程序输入字符了。 -->
 
+
+## CPU架构图
+
+![](assets/single_cycle_cpu_zicsr.drawio.svg)
+
+
 ***
 
 ## 实验报告
@@ -167,12 +173,10 @@ Timer 的代码位于 `src/main/scala/riscv/peripheral/Timer.scala`
 
 1. `CLINTCSRTest.scala` 中添加了 CLINT 处理硬件终端和软件中断的两个测试，请您选择至少一个，并：
       1. 简述这个测试通过给部件输入什么信号，以测试 CLINT 的哪些功能？
-      2. 在测试波形图上，找到一次从开始处理中断到中断处理完成的波形图，并挑选其中关键的信号说明其过程。例如硬件中断的测试中，有在跳转指令和非跳转指令下的两次中断处理测试；软件测试则分别测试了 `ecall` 和 `ebreak` 两次中断，选择其中一次即可。
+      2. 在测试波形图上，找到一次从开始处理中断到中断处理完成的波形图，并挑选其中关键的信号说明其过程。例如硬件中断的测试中，有在跳转指令和非跳转指令下的两次中断处理测试；软件中断则分别测试了 `ecall` 和 `ebreak` 两次中断，选择其中一次即可。
 2. `CPUTest.scala` 中新增了 `SimpleTrapTest`，其执行 `csrc/simpletest.c` 的程序。请您：
       1. 简述该测试程序如何测试 CPU 的中断处理正确性。
       2. 在测试波形图上找出说明该程序成功执行的信号。
-3. 说明您在完成实验的过程中，遇到的实验指导不足或改进建议。
+3. 假如我们的 CPU 上运行着某个操作系统，并在启动后向 `mtvec` 写入了中断处理程序的地址。若在执行程序时发生 定时器中断，CPU 及操作系统会如何协作完成该中断处理？请查阅课本、网络资料或辩证地使用大语言模型，简述这个过程。
+4. 说明您在完成实验的过程中，遇到的实验指导不足或改进建议。
 
-## CPU架构图
-
-![](images/single_cycle_CPU_with_interrupt_support.png)
