@@ -12,37 +12,111 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package riscv.core.fivestage
+package riscv.core.fivestage_final
 
 import chisel3._
 import riscv.Parameters
 
 class Control extends Module {
   val io = IO(new Bundle {
-    val jump_flag = Input(Bool())
-    val stall_flag_if = Input(Bool())
-    val stall_flag_mem = Input(Bool())
-    val stall_flag_clint = Input(Bool())
-    val stall_flag_bus = Input(Bool())
+    val jump_flag = Input(Bool())   // NOTE: this signal now comes from ID stage
+    val jump_instruction_id = Input(Bool()) // NOTE: whether instruction at ID is of jump/branch
     val rs1_id = Input(UInt(Parameters.PhysicalRegisterAddrWidth))
     val rs2_id = Input(UInt(Parameters.PhysicalRegisterAddrWidth))
     val memory_read_enable_ex = Input(Bool())
     val rd_ex = Input(UInt(Parameters.PhysicalRegisterAddrWidth))
+    val memory_read_enable_mem = Input(Bool())
+    val rd_mem = Input(UInt(Parameters.PhysicalRegisterAddrWidth))
 
-    val if_flush = Output(Bool())
-    val id_flush = Output(Bool())
+    val stall_flag_if = Input(Bool()) // fetch inst. from mem stall flag
+    val stall_flag_mem = Input(Bool()) // mem access stall flag
+
+    val if2id_flush = Output(Bool())
+    val id2ex_flush = Output(Bool())
     val pc_stall = Output(Bool())
-    val if_stall = Output(Bool())
-    val id_stall = Output(Bool())
-    val ex_stall = Output(Bool())
+    val if2id_stall = Output(Bool())
+    val id2ex_stall = Output(Bool())
+    val ex2mem_stall = Output(Bool())
   })
 
-  val id_hazard = io.memory_read_enable_ex && (io.rd_ex === io.rs1_id || io.rd_ex === io.rs2_id)
-  io.if_flush := io.jump_flag
-  io.id_flush := id_hazard
+  /*NOTE:
+    Since branch taken computation is moved to ID, now ID and EX both may cause data race.
 
-  io.pc_stall := io.stall_flag_mem || io.stall_flag_clint || id_hazard || io.stall_flag_bus || io.stall_flag_if
-  io.if_stall := io.stall_flag_mem || io.stall_flag_clint || id_hazard
-  io.id_stall := io.stall_flag_mem || io.stall_flag_clint
-  io.ex_stall := io.stall_flag_mem || io.stall_flag_clint
+    If current instruction is a jump/branch type, ready to run ID stage and depends on data from:
+      a) previous instruction, that is ready to run EX stage and
+        1. gives result after EX stage, current instruction should be stalled for 1 cycle
+        2. gives result after MEM stage, current instruction should be stalled for 2 cycles
+      b) 2nd previous instruction, that is ready to run MEM stage and
+        1. already gives result in EX stage, forward its result
+        2. gives result after MEM stage, current instruction should be stalled for 1 cycle
+
+    If current instruction is ready to run EX stage, and depends on data from:
+      a) previous instruction, that is ready to run MEM stage and 
+        1. already gives result in EX stage, forward it
+        2. gives result after MEM stage, current instruction should be stalled for 1 cycle
+      b) 2nd previous instruction, that is ready to run WB stage, no hazard happens.
+  
+  */
+
+  /* 
+    cases for memory access stall:
+      1. if IF waits for memory, stall IF stage only
+      2. if MEM waits for memory, stall all stages before MEM
+   */
+
+  when (io.jump_instruction_id) {
+    // current instruction is of jump/branch type, need to check data dependencies
+    val rs1_needs_stall = io.rs1_id =/= 0.U && (
+      (io.rs1_id === io.rd_ex)  || // NOTE: no need to check memory_read_enable_ex, since both cases needs stall
+      (io.rs1_id === io.rd_mem && io.memory_read_enable_mem)
+    )
+    val rs2_needs_stall = io.rs2_id =/= 0.U && (io.rs2_id === io.rd_ex || (io.rs2_id === io.rd_mem && io.memory_read_enable_mem))
+
+    when (rs1_needs_stall || rs2_needs_stall) { // inst. at ID stage needs to stall
+      // NOTE: in this case jump_flag is INVALID, since reg data isn't latest 
+      // stall IF and ID stage
+      io.if2id_flush := false.B  // keep ID stage
+      io.id2ex_flush := true.B   // clear EX stage and after stages
+      io.pc_stall := true.B
+      io.if2id_stall := true.B
+    } .otherwise {
+      // NOTE: jump_flag is VALID
+      when (io.jump_flag) { // ID says it's time to jump, clears IF stage only
+        io.if2id_flush := io.jump_flag // clears IF2ID
+        io.id2ex_flush := false.B  // don't flush, let inst at ID goes on
+        io.pc_stall := false.B
+        io.if2id_stall := io.stall_flag_mem
+      }
+      .otherwise {
+        io.if2id_flush := false.B
+        io.id2ex_flush := false.B
+        io.pc_stall := io.stall_flag_if || io.stall_flag_mem 
+        io.if2id_stall := io.stall_flag_mem
+      }
+    }
+  }
+  .otherwise {
+    // current instruction is not of jump/branch type, jump_flag is always FALSE
+    // NOTE: notice that we check memory_read_enable_ex here since inst. at EX stage now may be a load instruction
+    val rs1_needs_stall = io.rs1_id =/= 0.U && io.rs1_id === io.rd_ex && io.memory_read_enable_ex
+    val rs2_needs_stall = io.rs2_id =/= 0.U && io.rs2_id === io.rd_ex && io.memory_read_enable_ex
+    when (rs1_needs_stall || rs2_needs_stall) { // inst. at ID stage needs to stall
+      // NOTE: compared to without jump judge moved to ID, current inst. is stalled at ID stage instead at EX stage
+      io.if2id_flush := false.B  // keep ID stage
+      io.id2ex_flush := true.B   // clear EX stage and after stages
+      io.pc_stall := true.B
+      io.if2id_stall := true.B
+    } .otherwise {
+      io.if2id_flush := false.B
+      io.id2ex_flush := false.B
+      io.pc_stall := io.stall_flag_if || io.stall_flag_mem 
+      io.if2id_stall := io.stall_flag_mem
+    }
+  }
+
+  // any moment that MEM stalls, EX and ID shall be stalled too. 
+  // This is not related to jump/branch(clears only IF) or data hazard(stalls IF and ID)
+  io.id2ex_stall := io.stall_flag_mem
+  io.ex2mem_stall := io.stall_flag_mem 
+
 }

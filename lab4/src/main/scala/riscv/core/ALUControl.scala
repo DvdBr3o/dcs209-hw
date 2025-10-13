@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package riscv.core.threestage
+package riscv.core
 
 import chisel3._
 import chisel3.util._
+import riscv.core.fivestage_final.{InstructionTypes, Instructions, InstructionsTypeI, InstructionsTypeR}
 
 class ALUControl extends Module {
   val io = IO(new Bundle {
@@ -41,7 +42,7 @@ class ALUControl extends Module {
           InstructionsTypeI.xori -> ALUFunctions.xor,
           InstructionsTypeI.ori -> ALUFunctions.or,
           InstructionsTypeI.andi -> ALUFunctions.and,
-          InstructionsTypeI.sri -> ALUFunctions.sr,
+          InstructionsTypeI.sri -> Mux(io.funct7(5), ALUFunctions.sra, ALUFunctions.srl)
         ),
       )
     }
@@ -57,9 +58,18 @@ class ALUControl extends Module {
           InstructionsTypeR.xor -> ALUFunctions.xor,
           InstructionsTypeR.or -> ALUFunctions.or,
           InstructionsTypeR.and -> ALUFunctions.and,
-          InstructionsTypeR.sr -> ALUFunctions.sr,
+          InstructionsTypeR.sr -> Mux(io.funct7(5), ALUFunctions.sra, ALUFunctions.srl)
         ),
       )
+    }
+    is(InstructionTypes.B) {
+      io.alu_funct := ALUFunctions.add
+    }
+    is(InstructionTypes.L) {
+      io.alu_funct := ALUFunctions.add
+    }
+    is(InstructionTypes.S) {
+      io.alu_funct := ALUFunctions.add
     }
     is(Instructions.jal) {
       io.alu_funct := ALUFunctions.add

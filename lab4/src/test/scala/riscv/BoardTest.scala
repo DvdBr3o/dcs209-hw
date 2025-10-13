@@ -16,7 +16,7 @@ class Z710_SayGoodbyeTest extends AnyFlatSpec with ChiselScalatestTester {
     test(new z710.Top("say_goodbye.asmbin")).withAnnotations(TestAnnotations.annos) { c => 
       
       for (i <- 1 to 50000) {
-        c.clock.step(5)
+        c.clock.step(10)
         c.io.rx.poke((i % 2).U) // poke some useless value, since rx not yet used
       }  
     }
@@ -29,7 +29,7 @@ class Z710v13_SayGoodbyeTest extends AnyFlatSpec with ChiselScalatestTester {
     test(new z710v1_3.Top("say_goodbye.asmbin")).withAnnotations(TestAnnotations.annos) { c => 
       
       for (i <- 1 to 50000) {
-        c.clock.step(5)
+        c.clock.step(10)
         c.io.rx.poke((i % 2).U) // poke some useless value, since rx not yet used
       }  
     }

@@ -17,6 +17,8 @@ package bus
 import chisel3._
 import riscv.Parameters
 
+
+// NOTE: currently this module is never actually.
 class BusArbiter extends Module {
   val io = IO(new Bundle {
     val bus_request = Input(Vec(Parameters.MasterDeviceCount, Bool()))

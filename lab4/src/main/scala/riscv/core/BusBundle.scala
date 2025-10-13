@@ -18,8 +18,8 @@ import chisel3._
 import riscv.Parameters
 
 class BusBundle extends Bundle {
-  val read = Output(Bool())
   val address = Output(UInt(Parameters.AddrWidth))
+  val read = Output(Bool())
   val read_data = Input(UInt(Parameters.DataWidth))
   val read_valid = Input(Bool())
   val write = Output(Bool())
@@ -28,5 +28,5 @@ class BusBundle extends Bundle {
   val write_valid = Input(Bool())
   val busy = Input(Bool())
   val request = Output(Bool())
-  val granted = Input(Bool())
+  val granted = Input(Bool()) // device asking for bus access
 }

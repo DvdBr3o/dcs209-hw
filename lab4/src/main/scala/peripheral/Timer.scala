@@ -14,7 +14,8 @@
 
 package peripheral
 
-import bus.{AXI4LiteChannels, AXI4LiteSlave}
+import bus.{AXI4LiteChannels}
+import bus.AXI4LiteSlave
 import chisel3._
 import chisel3.util._
 import riscv.Parameters
@@ -37,7 +38,7 @@ class Timer extends Module {
   io.debug_enabled := enabled
 
   slave.io.bundle.read_data := 0.U
-  slave.io.bundle.read_valid := true.B
+  slave.io.bundle.read_valid := slave.io.bundle.read
   when(slave.io.bundle.read) {
     slave.io.bundle.read_data := MuxLookup(
       slave.io.bundle.address,

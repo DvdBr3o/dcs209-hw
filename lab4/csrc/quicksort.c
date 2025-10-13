@@ -47,4 +47,7 @@ int main() {
   for (int i = 1; i <= 10; ++i) {
     *(int *)(i * 4) = nums[i - 1];
   }
+
+  *(int *)(0) = 0xbabecafe; // indicate program end
+  return 0;
 }

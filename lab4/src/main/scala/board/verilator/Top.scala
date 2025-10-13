@@ -14,7 +14,8 @@
 
 package board.verilator
 
-import bus.{AXI4LiteSlave, AXI4LiteSlaveBundle, BusArbiter, BusSwitch}
+import bus.{AXI4LiteSlaveBundle, BusArbiter, BusSwitch}
+import bus.AXI4LiteSlave
 import chisel3._
 import chisel3.stage.{ChiselGeneratorAnnotation, ChiselStage}
 import peripheral.DummySlave
@@ -54,8 +55,8 @@ class Top extends Module {
     bus_switch.io.slaves(i) <> dummy.io.channels
   }
 
-  cpu.io.stall_flag_bus := false.B
-  cpu.io.instruction_valid := true.B
+  // cpu.io.memory_and_bus_ready := true.B
+  // cpu.io.instruction_valid := true.B
   bus_switch.io.slaves(0) <> mem_slave.io.channels
   bus_switch.io.slaves(2) <> uart_slave.io.channels
 

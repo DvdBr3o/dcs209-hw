@@ -14,19 +14,25 @@
 
 package riscv.core
 
-import bus.{AXI4LiteChannels, AXI4LiteMasterBundle}
 import chisel3._
+// import peripheral.RAMBundle
+import riscv.core.BusBundle
+import bus.AXI4LiteChannels
 import riscv.Parameters
+
 
 class CPUBundle extends Bundle {
   val axi4_channels = new AXI4LiteChannels(Parameters.AddrBits, Parameters.DataBits)
-  val bus_address = Output(UInt(Parameters.AddrWidth))
   val interrupt_flag = Input(UInt(Parameters.InterruptFlagWidth))
-  val stall_flag_bus = Input(Bool())
+  
   val debug_read_address = Input(UInt(Parameters.PhysicalRegisterAddrWidth))
   val debug_read_data = Output(UInt(Parameters.DataWidth))
 
-  val instruction_valid = Input(Bool())
-  val bus_busy = Output(Bool())
-  val debug = Output(Vec(6, UInt(32.W)))
+  // below signals intercept CPU memory access
+  /* NOTE: `bus_address` intercepts the address that CPU reads/writes.
+    Current design issues only 1 read/write request from CPU to bus.
+   */
+  val bus_address = Output(UInt(Parameters.AddrWidth))
+  val debug_bus_write_enable = Output(Bool()) // specially for UART print
+  val debug_bus_write_data = Output(UInt(Parameters.DataWidth)) // specially for UART print
 }

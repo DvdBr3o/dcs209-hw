@@ -1,0 +1,17 @@
+
+E:/Workplace/2025-fall-yatcpu-test/lab4-renew/csrc/build/mmio:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00010074 <_start>:
+   10074:	80000537          	lui	a0,0x80000
+   10078:	00452283          	lw	t0,4(a0) # 80000004 <__global_pointer$+0x7ffee770>
+   1007c:	0000c5b7          	lui	a1,0xc
+   10080:	eef58593          	addi	a1,a1,-273 # beef <_start-0x4185>
+   10084:	00b52223          	sw	a1,4(a0)
+   10088:	00000013          	nop
+   1008c:	00452303          	lw	t1,4(a0)
+
+00010090 <loop>:
+   10090:	0000006f          	j	10090 <loop>

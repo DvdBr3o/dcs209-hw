@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package riscv.core.threestage
+package riscv.core
 
 import chisel3._
 import chisel3.util._
@@ -74,5 +74,12 @@ class RegisterFile extends Module {
       (io.debug_read_address === io.write_address && io.write_enable) -> io.write_data
     )
   )
+
+  // DEBUG
+  // val debug_clk_cnt = RegInit(0.U(32.W))
+  // debug_clk_cnt := debug_clk_cnt + 1.U
+  // when (io.write_enable) {
+  //   printf(cf"[Reg] at clock ${debug_clk_cnt} write to register ${io.write_address}: 0x${io.write_data}%x\n\n")
+  // }
 
 }

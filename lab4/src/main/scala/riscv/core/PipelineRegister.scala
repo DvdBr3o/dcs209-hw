@@ -12,24 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package riscv.debug
+package riscv.core
 
 import chisel3._
-import chisel3.util._
+import riscv.Parameters
 
-object DTMRegisters {
-  val IDCODE = 0x01.U
-  val DTMCS = 0x10.U
-  val DMI = 0x11.U
-  val BYPASS1F = 0x1F.U
-}
-
-class DebugTransportModule extends Module {
+class PipelineRegister(width: Int = Parameters.DataBits, defaultValue: UInt = 0.U) extends Module {
   val io = IO(new Bundle {
-
+    val stall = Input(Bool())
+    val flush = Input(Bool())
+    val in = Input(UInt(width.W))
+    val out = Output(UInt(width.W))
   })
+  // Lab3(PipelineRegister)
+  val reg = RegInit(defaultValue)
 
-  val idcode = 0x1e200151.U
-  val dtmcs = RegInit("b00000000000000000101000011100001".U)
-  val dmi = RegInit(UInt(48.W))
+  when(io.flush) {
+    reg := defaultValue
+  } .elsewhen(!io.stall) {
+    reg := io.in
+  }
+
+  io.out := reg
+  // Lab3(PipelineRegister) End
 }

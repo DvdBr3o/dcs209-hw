@@ -22,49 +22,43 @@ object BootStates extends ChiselEnum {
 
 
 class Top(binaryFilename: String ="say_goodbye.asmbin") extends Module {
-  // val binaryFilename = "say_goodbye.asmbin"
   val io = IO(new Bundle {
-    // val switch = Input(UInt(16.W))
-
-    // val rgb = Output(UInt(12.W))
-
-    val led = Output(Bool())
     val tx = Output(Bool())
     val rx = Input(Bool())
-
-
+    val led = Output(Bool())
   })
   val boot_state = RegInit(BootStates.Init)
 
-  val uart = Module(new Uart(125_000_000, 115200))  // this freq is consistent with Zynq 7 PS UART module
+  val clock_freq = 125_000_000
+  val uart = Module(new Uart(clock_freq, 115200))  // this freq is consistent with Zynq 7 PS UART module
   io.tx := uart.io.txd
   uart.io.rxd := io.rx
 
-  val cpu = Module(new CPU)
   val mem = Module(new Memory(Parameters.MemorySizeInWords))
   val timer = Module(new Timer)
   val dummy = Module(new DummySlave)
   val bus_arbiter = Module(new BusArbiter)
   val bus_switch = Module(new BusSwitch)
-
   val instruction_rom = Module(new InstructionROM(binaryFilename))
   val rom_loader = Module(new ROMLoader(instruction_rom.capacity))
 
+  // bus connections
   bus_arbiter.io.bus_request(0) := true.B
-
-  bus_switch.io.master <> cpu.io.axi4_channels
-  bus_switch.io.address := cpu.io.bus_address
   for (i <- 0 until Parameters.SlaveDeviceCount) {
     bus_switch.io.slaves(i) <> dummy.io.channels
   }
+
+  bus_switch.io.slaves(2) <> uart.io.channels
+  bus_switch.io.slaves(4) <> timer.io.channels
+
   rom_loader.io.load_address := Parameters.EntryAddress
   rom_loader.io.load_start := false.B
   rom_loader.io.rom_data := instruction_rom.io.data
   instruction_rom.io.address := rom_loader.io.rom_address
-  cpu.io.stall_flag_bus := true.B
-  cpu.io.instruction_valid := false.B
+
   bus_switch.io.slaves(0) <> mem.io.channels
   rom_loader.io.channels <> dummy.io.channels
+
   switch(boot_state) {
     is(BootStates.Init) {
       rom_loader.io.load_start := true.B
@@ -79,33 +73,34 @@ class Top(binaryFilename: String ="say_goodbye.asmbin") extends Module {
       }
     }
     is(BootStates.Finished) {
-      cpu.io.stall_flag_bus := false.B
-      cpu.io.instruction_valid := true.B
+
     }
   }
 
-  bus_switch.io.slaves(2) <> uart.io.channels
-  bus_switch.io.slaves(4) <> timer.io.channels
+  val reset_cpu = reset.asBool && (boot_state =/= BootStates.Finished)
+  withReset (reset_cpu) { // this ensures CPU is up only after program is loaded
+    val cpu = Module(new CPU)
+    bus_switch.io.master <> cpu.io.axi4_channels
+    bus_switch.io.address := cpu.io.bus_address
+    cpu.io.interrupt_flag := Cat(uart.io.signal_interrupt, timer.io.signal_interrupt)
+    cpu.io.debug_read_address := 0.U
 
-  cpu.io.interrupt_flag := Cat(uart.io.signal_interrupt, timer.io.signal_interrupt)
-
-  cpu.io.debug_read_address := 0.U
+    // UART print
+    val device = cpu.io.bus_address(Parameters.AddrBits - 1, Parameters.AddrBits - Parameters.SlaveDeviceCountBits)
+    when (cpu.io.debug_bus_write_enable && device === 2.U) {
+      printf("%c", cpu.io.debug_bus_write_data.asUInt)
+    }
+  }
+  
   mem.io.debug_read_address := 0.U
 
-
-  
-  val clock_freq = 125_000_000.U
-
   val led_count = RegInit(0.U(32.W))
-  when (led_count >= clock_freq) { // the led blinks every second, clock freq is 100M
+  when (led_count >= clock_freq.U) { // the led blinks every second
     led_count := 0.U
   }.otherwise {
     led_count := led_count + 1.U
   }
-
-  io.led := (led_count >= (clock_freq >> 1))
-
-
+  io.led := (led_count >= (clock_freq.U >> 1))
 }
 
 

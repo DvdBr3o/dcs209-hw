@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package riscv.core.fivestage
+package riscv.core.fivestage_final
 
 import chisel3._
 import chisel3.util._
@@ -138,13 +138,15 @@ class InstructionDecode extends Module {
     val instruction_address = Input(UInt(Parameters.AddrWidth))
     val reg1_data = Input(UInt(Parameters.DataWidth))
     val reg2_data = Input(UInt(Parameters.DataWidth))
+    val forward_from_mem = Input(UInt(Parameters.DataWidth))
+    val forward_from_wb = Input(UInt(Parameters.DataWidth))
+    val reg1_forward = Input(UInt(2.W))
+    val reg2_forward = Input(UInt(2.W))
     val interrupt_assert = Input(Bool())
     val interrupt_handler_address = Input(UInt(Parameters.AddrWidth))
 
     val regs_reg1_read_address = Output(UInt(Parameters.PhysicalRegisterAddrWidth))
     val regs_reg2_read_address = Output(UInt(Parameters.PhysicalRegisterAddrWidth))
-    val ex_reg1_data = Output(UInt(Parameters.DataWidth))
-    val ex_reg2_data = Output(UInt(Parameters.DataWidth))
     val ex_immediate = Output(UInt(Parameters.DataWidth))
     val ex_aluop1_source = Output(UInt(1.W))
     val ex_aluop2_source = Output(UInt(1.W))
@@ -155,6 +157,9 @@ class InstructionDecode extends Module {
     val ex_reg_write_address = Output(UInt(Parameters.PhysicalRegisterAddrWidth))
     val ex_csr_address = Output(UInt(Parameters.CSRRegisterAddrWidth))
     val ex_csr_write_enable = Output(Bool())
+    val ctrl_jump_instruction = Output(Bool())  // this should tell whether the instruction is jump or branch instruction
+    val clint_jump_flag = Output(Bool())
+    val clint_jump_address = Output(UInt(Parameters.AddrWidth))
     val if_jump_flag = Output(Bool())
     val if_jump_address = Output(UInt(Parameters.AddrWidth))
   })
@@ -165,11 +170,24 @@ class InstructionDecode extends Module {
   val rs1 = io.instruction(19, 15)
   val rs2 = io.instruction(24, 20)
 
-  io.regs_reg1_read_address := Mux(opcode === Instructions.lui, 0.U(Parameters.PhysicalRegisterAddrWidth), rs1)
-  io.regs_reg2_read_address := rs2
-  io.ex_reg1_data := io.reg1_data
-  io.ex_reg2_data := io.reg2_data
-  val immediate = MuxLookup(
+
+  // NOTE: we use 0.U as the reg address for no destination write
+  io.regs_reg1_read_address := Mux(   // rs1 is not present only in U-type and J-type instructions
+    opcode === Instructions.lui || opcode === Instructions.auipc || // U-type in riscv32i
+    opcode === Instructions.jal,      // J-type in riscv32i
+    0.U(Parameters.PhysicalRegisterAddrWidth), rs1
+  )
+
+  io.regs_reg2_read_address := Mux(   // rs2 is not present only U, J and I-type instructions
+    opcode === Instructions.lui || opcode === Instructions.auipc || // U-type in riscv32i
+    opcode === Instructions.jal || // J-type in riscv32i
+    opcode === InstructionTypes.I || opcode === InstructionTypes.L || opcode === Instructions.jalr || // I-type in riscv32i
+    opcode === Instructions.csr, // I-type env instructions and CSR
+    0.U(Parameters.PhysicalRegisterAddrWidth), rs2
+  )
+
+
+  io.ex_immediate := MuxLookup(
     opcode,
     Cat(Fill(20, io.instruction(31)), io.instruction(31, 20)),
     IndexedSeq(
@@ -183,7 +201,6 @@ class InstructionDecode extends Module {
       Instructions.jal -> Cat(Fill(12, io.instruction(31)), io.instruction(19, 12), io.instruction(20), io.instruction(30, 21), 0.U(1.W))
     )
   )
-  io.ex_immediate := immediate
   io.ex_aluop1_source := Mux(
     opcode === Instructions.auipc || opcode === InstructionTypes.B || opcode === Instructions.jal,
     ALUOp1Source.InstructionAddress,
@@ -209,30 +226,62 @@ class InstructionDecode extends Module {
   io.ex_reg_write_enable := (opcode === InstructionTypes.RM) || (opcode === InstructionTypes.I) ||
     (opcode === InstructionTypes.L) || (opcode === Instructions.auipc) || (opcode === Instructions.lui) ||
     (opcode === Instructions.jal) || (opcode === Instructions.jalr) || (opcode === Instructions.csr)
-  io.ex_reg_write_address := io.instruction(11, 7)
+  io.ex_reg_write_address := Mux( // S-type and B-type instructions do not write to regs
+    (opcode === InstructionTypes.S) || (opcode === InstructionTypes.B),
+    0.U(Parameters.PhysicalRegisterAddrWidth), rd
+  )
+
+
+
   io.ex_csr_address := io.instruction(31, 20)
   io.ex_csr_write_enable := (opcode === Instructions.csr) && (
     funct3 === InstructionsTypeCSR.csrrw || funct3 === InstructionsTypeCSR.csrrwi ||
-      funct3 === InstructionsTypeCSR.csrrs || funct3 === InstructionsTypeCSR.csrrsi ||
-      funct3 === InstructionsTypeCSR.csrrc || funct3 === InstructionsTypeCSR.csrrci
-    )
-  io.if_jump_flag := io.interrupt_assert ||
-    (opcode === Instructions.jal) ||
-    (opcode === Instructions.jalr) ||
-    (opcode === InstructionTypes.B) && MuxLookup(
-      funct3,
-      false.B,
-      IndexedSeq(
-        InstructionsTypeB.beq -> (io.reg1_data === io.reg2_data),
-        InstructionsTypeB.bne -> (io.reg1_data =/= io.reg2_data),
-        InstructionsTypeB.blt -> (io.reg1_data.asSInt < io.reg2_data.asSInt),
-        InstructionsTypeB.bge -> (io.reg1_data.asSInt >= io.reg2_data.asSInt),
-        InstructionsTypeB.bltu -> (io.reg1_data.asUInt < io.reg2_data.asUInt),
-        InstructionsTypeB.bgeu -> (io.reg1_data.asUInt >= io.reg2_data.asUInt)
-      )
-    )
-  io.if_jump_address := Mux(io.interrupt_assert,
-    io.interrupt_handler_address,
-    io.ex_immediate + Mux(opcode === Instructions.jalr, io.reg1_data, io.instruction_address)
+    funct3 === InstructionsTypeCSR.csrrs || funct3 === InstructionsTypeCSR.csrrsi ||
+    funct3 === InstructionsTypeCSR.csrrc || funct3 === InstructionsTypeCSR.csrrci
   )
+
+  // 
+
+  // determine jumping 
+  val reg1_data = MuxCase(io.reg1_data, Seq(
+    (io.reg1_forward === ForwardingType.ForwardFromMEM) -> io.forward_from_mem,
+    (io.reg1_forward === ForwardingType.ForwardFromWB) -> io.forward_from_wb
+  ))
+  val reg2_data = MuxCase(io.reg2_data, Seq(
+    (io.reg2_forward === ForwardingType.ForwardFromMEM) -> io.forward_from_mem,
+    (io.reg2_forward === ForwardingType.ForwardFromWB) -> io.forward_from_wb
+  ))
+
+  // jump caused by branch or jump instructions
+
+  val is_jump = (opcode === Instructions.jal) || (opcode === Instructions.jalr)
+  val is_branch = (opcode === InstructionTypes.B)
+  val branch_taken = is_branch && MuxLookup(
+    funct3,
+    false.B,
+    IndexedSeq(
+      InstructionsTypeB.beq -> (reg1_data === reg2_data),
+      InstructionsTypeB.bne -> (reg1_data =/= reg2_data),
+      InstructionsTypeB.blt -> (reg1_data.asSInt < reg2_data.asSInt),
+      InstructionsTypeB.bge -> (reg1_data.asSInt >= reg2_data.asSInt),
+      InstructionsTypeB.bltu -> (reg1_data.asUInt < reg2_data.asUInt),
+      InstructionsTypeB.bgeu -> (reg1_data.asUInt >= reg2_data.asUInt)
+    )
+  )
+
+  val jump_flag = is_jump || branch_taken
+  val jump_addr = Mux(jump_flag, 
+    MuxCase((io.instruction_address + Cat(Fill(20, io.instruction(31)), io.instruction(7), io.instruction(30, 25), io.instruction(11, 8), 0.U(1.W))), IndexedSeq(
+      (opcode === Instructions.jal)   -> (io.instruction_address + Cat(Fill(12, io.instruction(31)), io.instruction(19, 12), io.instruction(20), io.instruction(30, 21), 0.U(1.W))),
+      (opcode === Instructions.jalr)  -> (reg1_data + Cat(Fill(21, io.instruction(31)), io.instruction(30, 20)))
+    )), 
+    io.instruction_address + (Parameters.InstructionBits / 8).U
+  )
+
+  io.ctrl_jump_instruction := is_jump || is_branch
+  io.clint_jump_flag := jump_flag
+  io.clint_jump_address := jump_addr
+  io.if_jump_flag := jump_flag || io.interrupt_assert
+  io.if_jump_address := Mux(io.interrupt_assert, io.interrupt_handler_address, jump_addr)
+  // Lab3(Final) End
 }

@@ -1,0 +1,18 @@
+
+E:/Workplace/2025-fall-yatcpu-test/lab4-renew/csrc/build/sb:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00010074 <_start>:
+   10074:	00400513          	li	a0,4
+   10078:	deadc2b7          	lui	t0,0xdeadc
+   1007c:	eef28293          	addi	t0,t0,-273 # deadbeef <__global_pointer$+0xdeaca657>
+   10080:	00550023          	sb	t0,0(a0)
+   10084:	00052303          	lw	t1,0(a0)
+   10088:	01500913          	li	s2,21
+   1008c:	012500a3          	sb	s2,1(a0)
+   10090:	00052083          	lw	ra,0(a0)
+
+00010094 <loop>:
+   10094:	0000006f          	j	10094 <loop>

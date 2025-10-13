@@ -15,7 +15,8 @@
 package peripheral
 
 import chisel3._
-import bus.{AXI4LiteChannels, AXI4LiteSlave}
+import bus.{AXI4LiteChannels}
+import bus.AXI4LiteSlave
 import chisel3.{Bool, Bundle, Flipped, Module, Mux, Output, UInt, Wire}
 import chisel3.util.{MuxLookup, log2Up}
 import peripheral.ScreenInfo.{DisplayHorizontal, DisplayVertical}

@@ -12,16 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package riscv.core.fivestage
+package riscv.core.fivestage_final
 
 import chisel3._
 import chisel3.util._
-import riscv.Parameters
 import riscv.core.BusBundle
+import riscv.Parameters
+
+
+object MemoryAccessStates extends ChiselEnum {
+  val Idle, Read, Write = Value
+}
 
 class MemoryAccess extends Module {
   val io = IO(new Bundle() {
-    val alu_result = Input(UInt(Parameters.DataWidth))
+    val alu_result = Input(UInt(Parameters.DataWidth))  // used as memory address
     val reg2_data = Input(UInt(Parameters.DataWidth))
     val memory_read_enable = Input(Bool())
     val memory_write_enable = Input(Bool())
@@ -30,8 +35,8 @@ class MemoryAccess extends Module {
     val csr_read_data = Input(UInt(Parameters.DataWidth))
 
     val wb_memory_read_data = Output(UInt(Parameters.DataWidth))
-    val ctrl_stall_flag = Output(Bool())
     val forward_to_ex = Output(UInt(Parameters.DataWidth))
+    val ctrl_stall_flag = Output(Bool())  // stall when memory access is not finished
 
     val bus = new BusBundle
   })
@@ -51,6 +56,8 @@ class MemoryAccess extends Module {
   io.bus.write := false.B
   io.wb_memory_read_data := 0.U
   io.ctrl_stall_flag := false.B
+
+  // FIXME: misaligned access
 
   when(io.memory_read_enable) {
     when(mem_access_state === MemoryAccessStates.Idle) {
