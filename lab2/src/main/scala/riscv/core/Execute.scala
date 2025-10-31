@@ -15,7 +15,7 @@
 package riscv.core
 
 import chisel3._
-import chisel3.util.{Cat, MuxLookup}
+import chisel3.util.{Cat, MuxLookup, Fill}
 import riscv.Parameters
 
 class Execute extends Module {
@@ -73,7 +73,25 @@ class Execute extends Module {
   io.if_jump_address := io.immediate + Mux(opcode === Instructions.jalr, io.reg1_data, io.instruction_address)
   io.mem_alu_result := alu.io.result
   //lab2(CLINTCSR)
-  /*
-  io.csr_reg_write_data :=
-  */
+
+  //* thought `imme` be `io.immediate` at once.
+  val imme = Cat(Fill(Parameters.DataBits - 5, 0.U), io.instruction(19, 15))
+  
+  io.csr_reg_write_data := Mux(
+    opcode === Instructions.csr && !(
+      (
+        funct3 === InstructionsTypeCSR.csrrw || 
+        funct3 === InstructionsTypeCSR.csrrwi
+      ) && io.reg1_data === 0.U
+    ),
+    MuxLookup(funct3, 0x0deadbef.U)(IndexedSeq(
+      InstructionsTypeCSR.csrrw -> io.reg1_data,
+      InstructionsTypeCSR.csrrwi -> imme,
+      InstructionsTypeCSR.csrrs -> (io.csr_reg_read_data | io.reg1_data),
+      InstructionsTypeCSR.csrrsi -> (io.csr_reg_read_data | imme),
+      InstructionsTypeCSR.csrrc -> (io.csr_reg_read_data & ~io.reg1_data),
+      InstructionsTypeCSR.csrrci -> (io.csr_reg_read_data & ~imme),
+    )),
+    io.csr_reg_read_data
+  )
 }

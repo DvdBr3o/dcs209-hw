@@ -35,4 +35,24 @@ class Timer extends Module {
 
   //lab2(CLINTCSR)
   //finish the read-write for count,limit,enabled. And produce appropriate signal_interrupt
+  object DataAddr {
+    val enable = 0x8.U
+    val limit = 0x4.U
+  }
+
+  io.signal_interrupt := Mux(count >= limit, true.B, false.B)
+  count := Mux(count >= limit, 0.U, count + 1.U)
+
+  io.bundle.read_data := MuxLookup(io.bundle.address, 0.U)(IndexedSeq(
+    DataAddr.enable -> enabled,
+    DataAddr.limit -> limit,
+  ))
+
+  when(io.bundle.write_enable) {
+    when(io.bundle.address === DataAddr.enable) {
+      enabled := io.bundle.write_data
+    } .elsewhen(io.bundle.address === DataAddr.limit) {
+      limit := io.bundle.write_data
+    }
+  }
 }

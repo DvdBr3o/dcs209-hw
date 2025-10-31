@@ -15,7 +15,7 @@
 package riscv.core
 
 import chisel3._
-import chisel3.util.MuxLookup
+import chisel3.util.{MuxLookup, Cat}
 import riscv.Parameters
 
 object InterruptCode {
@@ -66,24 +66,75 @@ class CLINT extends Module {
     io.instruction_address + 4.U,
   )
   //lab2(CLINTCSR)
-  /*
-  val interrupt_enable =
+  val mpie = io.csr_bundle.mstatus(7)
+  val mie = io.csr_bundle.mstatus(3)
+  // val mpp = io.csr_bundle.mstatus(12, 11)
 
-  when(io.interrupt_flag =/= InterruptStatus.None && interrupt_enable) {
+  // diffic1: mstatus too complicated
+  // diffic2: mcause not known, then found not written
+
+  when(io.interrupt_flag =/= InterruptCode.None && interrupt_enable) { // interrupt
+    io.interrupt_assert := true.B
+    io.interrupt_handler_address := io.csr_bundle.mtvec
     io.csr_bundle.mstatus_write_data :=
-    io.csr_bundle.mepc_write_data :=
-    io.csr_bundle.mcause_write_data :=
-    io.csr_bundle.direct_write_enable :=
-    io.interrupt_assert :=
-    io.interrupt_handler_address :=
-  }
-  .elsewhen(io.instruction === InstructionsEnv.ebreak || io.instruction === InstructionsEnv.ecall) {
-    ......
-  }
-  .elsewhen(io.instruction === InstructionsRet.mret) {
-    ......
+      Cat(
+        io.csr_bundle.mstatus(31, 8), 
+        mie, // mpie
+        io.csr_bundle.mstatus(6, 4), 
+        0.U(1.W), //mie
+        io.csr_bundle.mstatus(2, 0)
+      )
+    io.csr_bundle.mepc_write_data := instruction_address
+    io.csr_bundle.mcause_write_data := 
+      Cat(
+        1.U, 
+        MuxLookup(
+          io.interrupt_flag, 
+          11.U(31.W) // machine external interrupt
+          )(IndexedSeq(
+            InterruptCode.Timer0 -> 7.U(31.W),
+          )
+        )
+      )
+    io.csr_bundle.direct_write_enable := true.B
+  }.elsewhen(io.instruction === InstructionsEnv.ebreak || io.instruction === InstructionsEnv.ecall) { // exception
+    io.interrupt_assert := true.B
+    io.interrupt_handler_address := io.csr_bundle.mtvec
+    io.csr_bundle.mstatus_write_data := 
+      Cat(
+        io.csr_bundle.mstatus(31, 8), 
+        mie, // mpie
+        io.csr_bundle.mstatus(6, 4), 
+        0.U(1.W), //mie
+        io.csr_bundle.mstatus(2, 0)
+      )
+    io.csr_bundle.mepc_write_data := instruction_address
+    io.csr_bundle.mcause_write_data := Cat(0.U, MuxLookup(io.instruction, 0.U)(IndexedSeq(
+      InstructionsEnv.ebreak -> 3.U(31.W),
+      InstructionsEnv.ecall -> 11.U(31.W),
+    )))
+    io.csr_bundle.direct_write_enable := true.B
+  }.elsewhen(io.instruction === InstructionsRet.mret) { // ret
+    io.interrupt_assert := true.B
+    io.interrupt_handler_address := io.csr_bundle.mepc
+    io.csr_bundle.mstatus_write_data := 
+      Cat(
+        io.csr_bundle.mstatus(31, 8),
+        1.U(1.W),
+        io.csr_bundle.mstatus(6, 4),
+        mpie, //mie
+        io.csr_bundle.mstatus(2, 0)
+      )
+    io.csr_bundle.mepc_write_data := io.csr_bundle.mepc
+    io.csr_bundle.mcause_write_data := io.csr_bundle.mcause
+    io.csr_bundle.direct_write_enable := true.B
   }.otherwise {
-    ......
+    io.interrupt_assert := false.B
+    io.interrupt_handler_address := io.csr_bundle.mtvec
+    io.csr_bundle.mstatus_write_data := io.csr_bundle.mstatus
+    io.csr_bundle.mepc_write_data := io.csr_bundle.mepc
+    io.csr_bundle.mcause_write_data := io.csr_bundle.mcause
+    io.csr_bundle.direct_write_enable := false.B
   }
-   */
+  // io.interrupt_handler_address := io.csr_bundle.mepc
 }
