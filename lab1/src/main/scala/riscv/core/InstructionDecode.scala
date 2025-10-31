@@ -163,7 +163,7 @@ class InstructionDecode extends Module {
       InstructionTypes.I -> Cat(Fill(21, io.instruction(31)), io.instruction(30, 20)),
       InstructionTypes.L -> Cat(Fill(21, io.instruction(31)), io.instruction(30, 20)),
       Instructions.jalr -> Cat(Fill(21, io.instruction(31)), io.instruction(30, 20)),
-      InstructionTypes.S -> Cat(Fill(21, io.instruction(31)), io.instruction(30, 25), io.instruction(11, 7)),
+      InstructionTypes.S -> Cat(Fill(21, io.instruction(31)), io.instruction(30, 25), io.instruction(11, 7)),   
       InstructionTypes.B -> Cat(Fill(20, io.instruction(31)), io.instruction(7), io.instruction(30, 25), io.instruction(11, 8), 0.U(1.W)),
       Instructions.lui -> Cat(io.instruction(31, 12), 0.U(12.W)),
       Instructions.auipc -> Cat(io.instruction(31, 12), 0.U(12.W)),
@@ -177,13 +177,31 @@ class InstructionDecode extends Module {
     ALUOp1Source.Register
   )
 
+  io.memory_read_enable  := opcode === InstructionTypes.L
+  io.memory_write_enable := opcode === InstructionTypes.S
+  io.wb_reg_write_source := MuxLookup(opcode, RegWriteSource.ALUResult)(IndexedSeq(
+    InstructionTypes.L  -> RegWriteSource.Memory,
+    Instructions.jal    -> RegWriteSource.NextInstructionAddress,
+    Instructions.jalr   -> RegWriteSource.NextInstructionAddress,
+  ))
+
+
   // lab1(InstructionDecode)
 
+  io.ex_aluop2_source := Mux(
+    opcode === InstructionTypes.I || 
+    opcode === InstructionTypes.S || 
+    opcode === InstructionTypes.B || 
+    opcode === InstructionTypes.L || 
+    opcode === Instructions.jal || 
+    opcode === Instructions.jalr  || 
+    opcode === Instructions.lui || 
+    opcode === Instructions.auipc ,
 
-
-
-
-
+    ALUOp2Source.Immediate,
+    ALUOp2Source.Register
+  )
+  
 
   // lab1(InstructionDecode) end
   io.reg_write_enable := (opcode === InstructionTypes.RM) || (opcode === InstructionTypes.I) ||

@@ -39,7 +39,7 @@ class ExecuteTest extends AnyFlatSpec with ChiselScalatestTester{
       c.io.reg1_data.poke(0x1888L.U)
       c.io.csr_reg_write_data.expect(0x1888.U)
       c.clock.step()
-      c.io.instruction.poke(0x30002573L.U) //csrr a0, mstatus
+      c.io.instruction.poke(0x30002573L.U) //csrr a0, mstatus 
       c.io.csr_reg_read_data.poke(0x1888.U)
       c.io.reg1_data.poke(0x0L.U)
       c.io.csr_reg_write_data.expect(0x1888.U)
